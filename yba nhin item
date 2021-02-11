@@ -1,0 +1,106 @@
+-- ceg#0550 jfhjtrghjrthgtggrighrighrigtrghtruithgrhgthrgr
+-- ic3w0lf  hot sexy drawing api
+
+-- aarg, abbyclaw6666666 updating script
+
+local Settings = {
+ItemData = {
+[4496695972] = { ItemName = "Arrow", Color = Color3.fromRGB(255, 120, 0) },
+[511706016] =  { ItemName = "Diamond", Color = Color3.fromRGB(81, 117, 255) },
+[3497428510] = { ItemName = "Rokakaka", Color = Color3.fromRGB(220, 50, 50) },
+[3583727108] = { ItemName = "Gold Coin", Color = Color3.fromRGB(255, 240, 0) },
+[4551120971] = { ItemName = "Stone Mask", Color = Color3.fromRGB(98, 37, 209) },
+[5249254947] = { ItemName = "Rib Cage of The Saint's Corpse", Color = Color3.fromRGB(50, 220, 50) },
+[5291254518] = { ItemName = "Steel Ball", Color = Color3.fromRGB(34, 139, 34) },
+[5675321032] = { ItemName = "DIO's Diary", Color = Color3.fromRGB(139, 69, 19) },
+[60791940] = { ItemName = "Ancient Scroll", Color = Color3.fromRGB(165, 42, 42) },
+[180620778] = { ItemName = "Quinton's Glove", Color = Color3.fromRGB(139, 0, 0) },
+[11124978] = { ItemName = "Zepellin's Headband", Color = Color3.fromRGB(250, 128, 114) }
+       
+},
+Tracers = false,
+Circles = true,
+Distance = true,
+Notify = true
+}
+
+local function notify(a)
+local NotificationBindable = Instance.new("BindableFunction")
+NotificationBindable.OnInvoke = (function(text) end)
+
+game.StarterGui:SetCore("SendNotification", {
+Title = "Item spawned";
+Text = a;
+Duration = "5";
+Callback = NotificationBindable;
+})
+end
+
+local Wrapper = loadstring(game:HttpGet("https://pastebin.com/raw/9YKGCEmS"))()
+local Map = workspace.Item_Spawns.Items
+
+local function GetAsset(Id)
+if Id:sub(1, 13) == "rbxassetid://" then
+return tonumber(Id:sub(14, #Id)) -- rbxassetid://0
+else
+if Id:sub(1, 32) == "http://www.roblox.com/asset/?id=" then
+return tonumber(Id:sub(33, #Id))
+elseif Id:sub(1, 33) == "https://www.roblox.com/asset/?id=" then
+return tonumber(Id:sub(34, #Id))
+end
+return tonumber(Id) -- maybe idk
+end
+end
+
+local function IsItem(Mesh)
+local AssetId = GetAsset(Mesh.MeshId)
+   
+for id, _ in pairs(Settings.ItemData) do
+if id == AssetId then
+return true
+end
+end
+   
+return false
+end
+
+local function Esp(Item)
+local itemData = Settings.ItemData[GetAsset(Item.MeshId)] or { ItemName = "Unknown Item [???]", Color = Color3.fromRGB(255, 255, 255) }
+-- Some items decide to re-use mesh so oof!
+   
+if Item.Material == Enum.Material.ForceField then
+itemData = { ItemName = "Pure Rokakaka", Color = Color3.fromRGB(233, 233, 233) }
+end
+   
+if Settings.Notify then
+       notify(itemData.ItemName)
+end
+   
+Wrapper:AddObject(
+Item,
+itemData.ItemName,
+itemData.Color,
+Settings.Distance,
+Settings.Tracers,
+Settings.Circles
+)
+end
+
+-- Grab items that are currently in the game
+
+for Index, Object in pairs(Map:GetDescendants()) do
+if Object:IsA("MeshPart") then
+if IsItem(Object) then
+Esp(Object)
+end
+end
+end
+
+-- Detect New Items
+Map.DescendantAdded:Connect(function(Descendant)
+if Descendant:IsA("MeshPart") then
+if IsItem(Descendant) then
+Esp(Descendant)
+end
+end
+end)

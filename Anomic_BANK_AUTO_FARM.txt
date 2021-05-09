@@ -1,0 +1,210 @@
+--credits to 2b for being sexy
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Shariiii/Anomic-Stuff/main/Anti%20Noclip%20Bypass.lua",true))()
+
+local ws = game:GetService("Workspace")
+local plr = game:GetService("Players")
+local hrp = plr.LocalPlayer.Character.HumanoidRootPart
+local hum = plr.LocalPlayer.Character.Humanoid
+local char = plr.LocalPlayer.Character
+wait(10)
+print("Starting..")
+function notif(title,text)
+game.StarterGui:SetCore("SendNotification", {
+ Title = title;
+ Text = text;
+ Duration = 3;
+ })
+ end
+
+function ServerHop()
+ local HttpService, TPService = game:GetService("HttpService"), game:GetService("TeleportService")
+ function RandomServer()
+     temp = {}
+     local ServersToTP = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+     for i,v in pairs(ServersToTP.data) do
+         if v.playing ~= v.maxPlayers then
+             table.insert(temp,v)
+         end
+     end
+     return temp[math.random(1,#temp)]
+ end
+ TPService:TeleportToPlaceInstance(game.PlaceId, RandomServer().id)
+end
+ function spawner()
+   for i,v in pairs(getgc(true)) do
+     if type(v) == 'function' and getfenv(v).script == game:GetService("Players").LocalPlayer.PlayerGui.MainMenu.Controller and table.find(getconstants(v),'SpawnCharacter') and table.find(getconstants(v),'SpawnChar') then
+         v()
+         break
+     end
+ end
+ end
+function picklock(model, tool)
+   local CS = game:GetService("ReplicatedStorage")["_CS.Events"]
+   CS.ShootAnim:Fire("Interact", "Start");
+   local A_1 = model
+   local Event = game:GetService("ReplicatedStorage")["_CS.Events"].LockpickEvent
+   Event:FireServer(A_1)
+   local v1 = "GiveWantedLevel"
+   local rem = CS.ToolEvent
+   rem:FireServer(v1)
+   wait(15.2)
+   local A_1 = "OpenDoor"
+   local A_2 = model
+   local A_3 = tool
+   local Event = game:GetService("ReplicatedStorage")["_CS.Events"].ToolEvent
+   Event:FireServer(A_1, A_2, A_3)
+   CS.ShootAnim:Fire("Interact", "Stop");
+end
+function GetDrill()
+ for __,tool in pairs(workspace.Entities:GetChildren()) do
+   if tool.Name == "ToolModel" then
+     if tool:FindFirstChild("Handle") then
+         tool:WaitForChild("Handle")
+         tool.Handle:WaitForChild("ToolBG")
+         tool.Handle.ToolBG:WaitForChild("ToolName")
+         wait(.2)
+         if tool.Handle.ToolBG.ToolName.Value == "Drill" then
+         hrp.CFrame = tool.Handle.CFrame
+         wait(.7)
+         game:GetService("ReplicatedStorage")["_CS.Events"].Dropper:FireServer(tool, "PickUp")
+     end
+     end
+   end
+ end
+end
+function getTools()
+game:GetService("ReplicatedStorage")["_CS.Events"].RemoveItem:FireServer("Lockpick", "Items")
+game:GetService("ReplicatedStorage")["_CS.Events"].RemoveItem:FireServer("Drill", "Items")
+wait(.7)
+if not plr.LocalPlayer.Backpack:FindFirstChild("Drill") and not plr.LocalPlayer.Backpack:FindFirstChild("Lockpick") then
+ notif("Bank AF","Store a lockpick and a drill for the script to work.")
+ return
+end
+end
+function convert()
+local Event = game:GetService("ReplicatedStorage")["_CS.Events"].ConvertBagMoney
+Event:FireServer()
+end
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+if ReplicatedStorage.BankRobberyActive.Value or ReplicatedStorage.BankRobberyDebounce.Value then ServerHop() end
+spawner()
+local detect = Instance.new("BoolValue", ws.BankBuilding:FindFirstChild("VaultDoor"))
+detect.Name = "FirstDoor"
+detect.Value = true
+wait(3)
+getTools()
+wait(1)
+hrp.CFrame = ws.BankBuilding.VaultDoor.Door.Main.CFrame - Vector3.new(0,7,0)
+hum:EquipTool(plr.LocalPlayer.Backpack:FindFirstChild("Lockpick"))
+wait(.3)
+hrp.Anchored = true
+picklock(ws.BankBuilding:FindFirstChild("VaultDoor").Door, char:FindFirstChildOfClass("Tool"))
+hrp.Anchored = false
+hum:EquipTool(plr.LocalPlayer.Backpack:FindFirstChild("Drill"))
+hrp.CFrame = ws.BankBuilding.VaultDoorDrill.Base.CFrame - Vector3.new(0,3,0)
+wait(.3)
+hrp.Anchored=true
+local A_1 = "DrillDoor"
+local A_2 = ws.BankBuilding.VaultDoorDrill.Door
+local A_3 = char:FindFirstChildOfClass("Tool")
+local Event = game:GetService("ReplicatedStorage")["_CS.Events"].ToolEvent
+Event:FireServer(A_1, A_2, A_3)
+hrp.Anchored=false
+wait(.3)
+hrp.CFrame = CFrame.new(4038, -19.469909667969, -2033)
+wait(20)
+repeat
+ pcall(function()
+   GetDrill()
+ end)
+ wait()
+until plr.LocalPlayer.Backpack:FindFirstChild("Drill")
+hum:EquipTool(plr.LocalPlayer.Backpack:FindFirstChild("Lockpick"))
+wait(.1)
+--Vault door
+for _,v in pairs(ws.BankBuilding:GetChildren())do
+  if v.Name == "VaultDoor" then
+      --print("Detected door.")
+   if not v:FindFirstChild("FirstDoor") then
+     --print("Internal door started.")
+    hrp.CFrame = v.Door.Main.CFrame - Vector3.new(0,7,0)
+    wait(.2)
+    hrp.Anchored = true
+    picklock(v.Door, char:FindFirstChildOfClass("Tool"))
+   end
+  end
+end
+--Drill vault doors
+hum:EquipTool(plr.LocalPlayer.Backpack:FindFirstChild("Drill"))
+hrp.Anchored = false
+for i=1, 4 do
+ hrp.CFrame = ws.BankBuilding.MoneyTables["MoneyTable"..tostring(i)].VaultDoorDrill.Base.CFrame - Vector3.new(0,2,0)
+ wait(.2)
+ hrp.Anchored = true
+ local Event = game:GetService("ReplicatedStorage")["_CS.Events"].MouseEvent
+ Event:FireServer()
+ local A_1 = "DrillDoor"
+ local A_2 = ws.BankBuilding.MoneyTables["MoneyTable"..tostring(i)].VaultDoorDrill.Door
+ local A_3 = char:FindFirstChildOfClass("Tool")
+ local Event = game:GetService("ReplicatedStorage")["_CS.Events"].ToolEvent
+ Event:FireServer(A_1, A_2, A_3)
+ hrp.Anchored = false
+ wait(.3)
+ hrp.CFrame = CFrame.new(4038, -19.469909667969, -2033) + Vector3.new(0,10,0)
+ wait(20)
+ repeat
+   pcall(function()
+     GetDrill()
+   end)
+   wait()
+ until plr.LocalPlayer.Backpack:FindFirstChild("Drill")
+ hum:EquipTool(plr.LocalPlayer.Backpack:FindFirstChild("Drill"))
+ wait(.7)
+end
+--grab money yes
+for i=1, 4 do
+   for _, v in pairs(ws.BankBuilding.MoneyTables["MoneyTable"..tostring(i)].MoneyStacks:GetChildren()) do
+     for i2,v2 in pairs(v:GetChildren()) do
+       if v2.Name == "MoneyBundle" then
+       hrp.CFrame = v2.BundlePart.CFrame
+       v2.Name = "CurrentGrabbing"
+       wait(.1)
+       repeat
+         local A_1 = ws.BankBuilding.MoneyTables["MoneyTable"..tostring(i)].MoneyStacks[v.Name]:FindFirstChild("CurrentGrabbing")
+         local Event = game:GetService("ReplicatedStorage")["_CS.Events"].PackMoney
+         Event:FireServer(A_1)
+         wait(.1)
+       until not ws.BankBuilding.MoneyTables["MoneyTable"..tostring(i)].MoneyStacks[v.Name]:FindFirstChild("CurrentGrabbing")
+       end
+     end
+   end
+end
+hrp.CFrame = CFrame.new(4038, -19.469909667969, -2033)
+--wait for being innocent
+function waitforinno()
+ repeat wait() until plr.LocalPlayer.Character.Head.PlayerDisplay.Wanted.Text == "Innocent"
+end
+waitforinno()
+repeat
+   wait(1)
+ local lock = plr.LocalPlayer.Backpack:FindFirstChild("Lockpick")
+ if lock then
+   hum:EquipTool(lock)
+   wait(.5)
+   game:GetService("ReplicatedStorage")["_CS.Events"].AddItem:FireServer("Lockpick", false)
+ end
+   
+   local drill = plr.LocalPlayer.Backpack:FindFirstChild("Drill")
+   if drill then
+     hum:EquipTool(drill)
+     wait(.5)
+     game:GetService("ReplicatedStorage")["_CS.Events"].AddItem:FireServer("Drill", false)
+   end
+   
+ until not plr.LocalPlayer.Backpack:FindFirstChild("Drill") and not plr.LocalPlayer.Backpack:FindFirstChild("Lockpick")
+wait(.2)
+for i=1, 5 do
+ wait(.1)
+ convert()
+end
+ServerHop()
